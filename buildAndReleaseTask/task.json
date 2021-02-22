@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "bbbd134b-e3c0-4f0d-984e-fa4f9b0fe95c",
+  "name": "MMinify",
+  "friendlyName": "minifies js and css-files",
+  "description": "minifies js and css-files",
+  "helpMarkDown": "",
+  "category": "Utility",
+  "author": "Martin Mörsell",
+  "version": {
+    "Major": 0,
+    "Minor": 2,
+    "Patch": 0
+  },
+  "inputs": [
+    {
+      "name": "minifyFilesPath",
+      "type": "string",
+      "label": "The path of the folder to minify .js and .css files in",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "$(System.DefaultWorkingDirectory)/output/ppg"
+    }
+  ],
+  "execution": {
+    "Node10": {
+      "target": "index.js"
+    }
+  }
+}
