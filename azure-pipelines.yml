@@ -15,14 +15,17 @@ steps:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+- script: npm install
+  workingDirectory: buildAndReleaseTask
+  displayName: 'npm install'
+
+- script: tsc
+  workingDirectory: buildAndReleaseTask
+  displayName: 'tsc run'
 
 - task: MMinify@0
   inputs:
-    minifyFilesPath: '$(System.DefaultWorkingDirectory)/samples'
+    minifyFilesPath: '$(System.DefaultWorkingDirectory)/buildAndReleaseTask/samples'
     minifyJsFiles: true
     minifyCssFiles: true
 
