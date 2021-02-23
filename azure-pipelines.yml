@@ -23,7 +23,7 @@ steps:
   workingDirectory: buildAndReleaseTask
   displayName: 'tsc run'
 
-- task: MMinify@0
+- task: MMinify@1
   inputs:
     minifyFilesPath: '$(System.DefaultWorkingDirectory)/samples'
     minifyJsFiles: true
