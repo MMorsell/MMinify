@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "build-release-task",
   "name": "MMinify",
-  "version": "0.0.3",
+  "version": "1.2.2",
   "publisher": "MartinMrsell",
   "targets": [
     {

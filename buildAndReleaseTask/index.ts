@@ -1,7 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 const minify = require("@node-minify/core");
 const cleanCSS = require("@node-minify/clean-css");
-const babelMinify = require("@node-minify/babel-minify");
+const uglifyES = require("@node-minify/uglify-es");
 var path = require("path"),
   fs = require("fs");
 
@@ -75,7 +75,7 @@ async function minifyFileType(minifyFilesPath: string, fileType: string) {
   var compressorType: any;
 
   if (fileType === ".js") {
-    compressorType = babelMinify;
+    compressorType = uglifyES;
   } else if (fileType === ".css") {
     compressorType = cleanCSS;
   } else {
@@ -99,9 +99,9 @@ async function minifyFileType(minifyFilesPath: string, fileType: string) {
 
 async function run() {
   try {
-    const minifyFilesPath: string | undefined = tl.getInput("minifyFilesPath", true);
+    const minifyFilesPath: string | undefined = tl.getInput("filePath", true);
     if (minifyFilesPath == undefined || minifyFilesPath.trim() == "" || minifyFilesPath == "bad") {
-      tl.setResult(tl.TaskResult.Failed, "minifyFilesPath is not valid");
+      tl.setResult(tl.TaskResult.Failed, "filePath is not valid");
       return;
     }
 

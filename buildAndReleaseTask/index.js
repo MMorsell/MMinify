@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tl = require("azure-pipelines-task-lib/task");
 var minify = require("@node-minify/core");
 var cleanCSS = require("@node-minify/clean-css");
-var babelMinify = require("@node-minify/babel-minify");
+var uglifyES = require("@node-minify/uglify-es");
 var path = require("path"), fs = require("fs");
 /**
  * Find all files recursively in specific folder with specific extension, e.g:
@@ -108,11 +108,9 @@ function minifyFileType(minifyFilesPath, fileType) {
                     preSize = getTotalFileSizeInKiloBytes(allFilePathsToMinify);
                     console.log("Pre-filesize: " + preSize + " kilobytes");
                     if (fileType === ".js") {
-                        console.log("js-compressor");
-                        compressorType = babelMinify;
+                        compressorType = uglifyES;
                     }
                     else if (fileType === ".css") {
-                        console.log("css-compressor");
                         compressorType = cleanCSS;
                     }
                     else {
@@ -147,9 +145,9 @@ function run() {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 5, , 6]);
-                    minifyFilesPath = tl.getInput("minifyFilesPath", true);
+                    minifyFilesPath = tl.getInput("filePath", true);
                     if (minifyFilesPath == undefined || minifyFilesPath.trim() == "" || minifyFilesPath == "bad") {
-                        tl.setResult(tl.TaskResult.Failed, "minifyFilesPath is not valid");
+                        tl.setResult(tl.TaskResult.Failed, "filePath is not valid");
                         return [2 /*return*/];
                     }
                     minifyJsFiles = tl.getBoolInput("minifyJsFiles", true);

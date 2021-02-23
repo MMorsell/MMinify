@@ -1,6 +1,6 @@
 {
   "name": "mminify",
-  "version": "1.0.0",
+  "version": "1.2.1",
   "description": "minifies js and css-files",
   "main": "index.js",
   "scripts": {
@@ -12,10 +12,8 @@
     "@node-minify/babel-minify": "^6.2.0",
     "@node-minify/clean-css": "^6.2.0",
     "@node-minify/core": "^6.2.0",
-    "@node-minify/google-closure-compiler": "^6.2.0",
-    "@node-minify/uglify-js": "^6.2.0",
-    "azure-pipelines-task-lib": "^3.1.0",
-    "depcheck": "^1.4.0"
+    "@node-minify/uglify-es": "^6.2.0",
+    "azure-pipelines-task-lib": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^14.14.31",

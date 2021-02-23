@@ -2,24 +2,24 @@
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "bbbd134b-e3c0-4f0d-984e-fa4f9b0fe95c",
   "name": "MMinify",
-  "friendlyName": "minifies js and css-files",
-  "description": "minifies js and css-files",
-  "helpMarkDown": "",
+  "friendlyName": "MMinify",
+  "description": "Minifies js and css-files",
+  "helpMarkDown": "Contact me via Skype @TRV",
   "category": "Utility",
   "author": "Martin Mörsell",
   "version": {
-    "Major": 0,
+    "Major": 1,
     "Minor": 2,
-    "Patch": 0
+    "Patch": 2
   },
   "inputs": [
     {
-      "name": "minifyFilesPath",
+      "name": "filePath",
       "type": "string",
       "label": "The path of the folder to minify .js and .css files in",
-      "defaultValue": "",
+      "defaultValue": "$(System.DefaultWorkingDirectory)",
       "required": true,
-      "helpMarkDown": "$(System.DefaultWorkingDirectory)/output/ppg"
+      "helpMarkDown": "E.g $(System.DefaultWorkingDirectory)/output/ppg"
     },
     {
       "name": "minifyJsFiles",
