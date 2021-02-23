@@ -4,34 +4,27 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 trigger:
-- master
+  - master
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "10.x"
+    displayName: "Install Node.js"
 
-- script: npm install
-  workingDirectory: buildAndReleaseTask
-  displayName: 'npm install'
+  - script: npm install
+    workingDirectory: buildAndReleaseTask
+    displayName: "npm install"
 
-- script: tsc
-  workingDirectory: buildAndReleaseTask
-  displayName: 'tsc run'
-  
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(System.DefaultWorkingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+  - script: tsc
+    workingDirectory: buildAndReleaseTask
+    displayName: "tsc run"
 
-# - task: MMinify@1
-#   inputs:
-#     minifyFilesPath: '$(System.DefaultWorkingDirectory)/samples'
-#     minifyJsFiles: true
-#     minifyCssFiles: true
-
+  - task: MMinify@1
+    inputs:
+      filesPath: "$(System.DefaultWorkingDirectory)/samples"
+      minifyJsFiles: true
+      minifyCssFiles: true
