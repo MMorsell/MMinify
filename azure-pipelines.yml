@@ -25,6 +25,6 @@ steps:
 
   - task: MMinify@1
     inputs:
-      filesPath: "$(System.DefaultWorkingDirectory)/samples"
+      filePath: '$(System.DefaultWorkingDirectory)/samples'
       minifyJsFiles: true
       minifyCssFiles: true
