@@ -1,6 +1,7 @@
 import tl = require("azure-pipelines-task-lib/task");
 const minify = require("@node-minify/core");
-const gcc = require("@node-minify/google-closure-compiler");
+const cleanCSS = require("@node-minify/clean-css");
+const babelMinify = require("@node-minify/babel-minify");
 var path = require("path"),
   fs = require("fs");
 
@@ -21,12 +22,12 @@ function findFilesInDir(startPath: string, filter: string): string[] {
 
   var files = fs.readdirSync(startPath);
   for (var i = 0; i < files.length; i++) {
-    var filename = path.join(startPath, files[i]);
+    var filename: string = path.join(startPath, files[i]);
     var stat = fs.lstatSync(filename);
     if (stat.isDirectory()) {
       results = results.concat(findFilesInDir(filename, filter)); //recurse
-    } else if (filename.indexOf(filter) >= 0) {
-      console.log("-- found: ", filename);
+    } else if (filename.endsWith(filter)) {
+      //   console.log("-- found: ", filename);
       results.push(filename);
     }
   }
@@ -34,8 +35,8 @@ function findFilesInDir(startPath: string, filter: string): string[] {
 }
 
 /**
- *
- * @param {String[]} filePaths  The array of filePaths to all the files that will summarize to the total size in kilobytes
+ * Returns the total size in kilobytes of all files in the string[]
+ * @param {String[]} filePaths  The array of filePaths to all the files that will summarize to the total size
  */
 function getTotalFileSizeInKiloBytes(filePaths: string[]): number {
   var totalFileSizeInBytes = 0;
@@ -47,13 +48,53 @@ function getTotalFileSizeInKiloBytes(filePaths: string[]): number {
 }
 
 /**
- *
- * @param {String} filename The filePath of the file that you want the size of in bytes
+ * Returns the file size in bytes
+ * @param {String} filename The filePath of the file that you want the size of
  */
 function getFilesizeInBytes(filename: string): number {
   var stats = fs.statSync(filename);
   var fileSizeInBytes = stats.size;
   return fileSizeInBytes;
+}
+
+/**
+ * Minifies the given file extension (currently only supports .js and .css)
+ * @param minifyFilesPath The parent path where the files is located, subfolders will be included in minification
+ * @param fileType The type of file to minify (currently only supports .js and .css)
+ */
+async function minifyFileType(minifyFilesPath: string, fileType: string) {
+  const allFilePathsToMinify = findFilesInDir(minifyFilesPath, fileType);
+  console.log(`Found ${allFilePathsToMinify.length} ${fileType}-files to minify`);
+
+  if (allFilePathsToMinify.length == 0) {
+    return;
+  }
+
+  const preSize = getTotalFileSizeInKiloBytes(allFilePathsToMinify);
+  console.log(`Pre-filesize: ${preSize} kilobytes`);
+  var compressorType: any;
+
+  if (fileType === ".js") {
+    compressorType = babelMinify;
+  } else if (fileType === ".css") {
+    compressorType = cleanCSS;
+  } else {
+    tl.setResult(tl.TaskResult.Failed, `FileExtension ${fileType} is not supported!`);
+    return;
+  }
+
+  await Promise.all(
+    allFilePathsToMinify.map(async (filePathToMinify) => {
+      await minify({ compressor: compressorType, input: filePathToMinify, output: filePathToMinify, replaceInPlace: true });
+    })
+  );
+
+  const postSize = getTotalFileSizeInKiloBytes(allFilePathsToMinify);
+
+  console.log(`Minfied ${allFilePathsToMinify.length} number of ${fileType}-files`);
+  console.log(`Post-filesize: ${postSize} kilobytes`);
+
+  console.log(`Total size saved: ${postSize - preSize} kilobytes`);
 }
 
 async function run() {
@@ -63,24 +104,22 @@ async function run() {
       tl.setResult(tl.TaskResult.Failed, "minifyFilesPath is not valid");
       return;
     }
-    const allFilePathsToMinify = findFilesInDir(minifyFilesPath, ".js");
-    console.log(`Found ${allFilePathsToMinify.length} files to minify`);
 
-    const preSize = getTotalFileSizeInKiloBytes(allFilePathsToMinify);
-    console.log(`Pre-filesize: ${preSize} kilobytes`);
+    var minifyJsFiles: boolean = tl.getBoolInput("minifyJsFiles", true);
 
-    await Promise.all(
-      allFilePathsToMinify.map(async (filePathToMinify) => {
-        await minify({ compressor: gcc, input: filePathToMinify, output: filePathToMinify, replaceInPlace: true });
-      })
-    );
+    var minifyCSSFiles: boolean = tl.getBoolInput("minifyCssFiles", true);
 
-    const postSize = getTotalFileSizeInKiloBytes(allFilePathsToMinify);
+    if (minifyJsFiles) {
+      await minifyFileType(minifyFilesPath, ".js");
+    }
 
-    console.log(`Minfied ${allFilePathsToMinify.length} number of files`);
-    console.log(`Post-filesize: ${postSize} kilobytes`);
+    if (minifyCSSFiles) {
+      await minifyFileType(minifyFilesPath, ".css");
+    }
 
-    console.log(`Total size saved: ${postSize - preSize} kilobytes`);
+    if (!minifyJsFiles && !minifyCSSFiles) {
+      console.log("Neither minify js nor css was checked, no minification has been executed");
+    }
   } catch (err) {
     tl.setResult(tl.TaskResult.Failed, err.message);
   }

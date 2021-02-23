@@ -38,7 +38,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var tl = require("azure-pipelines-task-lib/task");
 var minify = require("@node-minify/core");
-var gcc = require("@node-minify/google-closure-compiler");
+var cleanCSS = require("@node-minify/clean-css");
+var babelMinify = require("@node-minify/babel-minify");
 var path = require("path"), fs = require("fs");
 /**
  * Find all files recursively in specific folder with specific extension, e.g:
@@ -60,16 +61,16 @@ function findFilesInDir(startPath, filter) {
         if (stat.isDirectory()) {
             results = results.concat(findFilesInDir(filename, filter)); //recurse
         }
-        else if (filename.indexOf(filter) >= 0) {
-            console.log("-- found: ", filename);
+        else if (filename.endsWith(filter)) {
+            //   console.log("-- found: ", filename);
             results.push(filename);
         }
     }
     return results;
 }
 /**
- *
- * @param {String[]} filePaths  The array of filePaths to all the files that will summarize to the total size in kilobytes
+ * Returns the total size in kilobytes of all files in the string[]
+ * @param {String[]} filePaths  The array of filePaths to all the files that will summarize to the total size
  */
 function getTotalFileSizeInKiloBytes(filePaths) {
     var totalFileSizeInBytes = 0;
@@ -79,35 +80,49 @@ function getTotalFileSizeInKiloBytes(filePaths) {
     return totalFileSizeInBytes / 1000;
 }
 /**
- *
- * @param {String} filename The filePath of the file that you want the size of in bytes
+ * Returns the file size in bytes
+ * @param {String} filename The filePath of the file that you want the size of
  */
 function getFilesizeInBytes(filename) {
     var stats = fs.statSync(filename);
     var fileSizeInBytes = stats.size;
     return fileSizeInBytes;
 }
-function run() {
+/**
+ * Minifies the given file extension (currently only supports .js and .css)
+ * @param minifyFilesPath The parent path where the files is located, subfolders will be included in minification
+ * @param fileType The type of file to minify (currently only supports .js and .css)
+ */
+function minifyFileType(minifyFilesPath, fileType) {
     return __awaiter(this, void 0, void 0, function () {
-        var minifyFilesPath, allFilePathsToMinify, preSize, postSize, err_1;
+        var allFilePathsToMinify, preSize, compressorType, postSize;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    minifyFilesPath = tl.getInput("minifyFilesPath", true);
-                    if (minifyFilesPath == undefined || minifyFilesPath.trim() == "" || minifyFilesPath == "bad") {
-                        tl.setResult(tl.TaskResult.Failed, "minifyFilesPath is not valid");
+                    allFilePathsToMinify = findFilesInDir(minifyFilesPath, fileType);
+                    console.log("Found " + allFilePathsToMinify.length + " " + fileType + "-files to minify");
+                    if (allFilePathsToMinify.length == 0) {
                         return [2 /*return*/];
                     }
-                    allFilePathsToMinify = findFilesInDir(minifyFilesPath, ".js");
-                    console.log("Found " + allFilePathsToMinify.length + " files to minify");
                     preSize = getTotalFileSizeInKiloBytes(allFilePathsToMinify);
-                    console.log("Pre-filesize: " + preSize + " bytes");
+                    console.log("Pre-filesize: " + preSize + " kilobytes");
+                    if (fileType === ".js") {
+                        console.log("js-compressor");
+                        compressorType = babelMinify;
+                    }
+                    else if (fileType === ".css") {
+                        console.log("css-compressor");
+                        compressorType = cleanCSS;
+                    }
+                    else {
+                        tl.setResult(tl.TaskResult.Failed, "FileExtension " + fileType + " is not supported!");
+                        return [2 /*return*/];
+                    }
                     return [4 /*yield*/, Promise.all(allFilePathsToMinify.map(function (filePathToMinify) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, minify({ compressor: gcc, input: filePathToMinify, output: filePathToMinify, replaceInPlace: true })];
+                                    case 0: return [4 /*yield*/, minify({ compressor: compressorType, input: filePathToMinify, output: filePathToMinify, replaceInPlace: true })];
                                     case 1:
                                         _a.sent();
                                         return [2 /*return*/];
@@ -117,15 +132,49 @@ function run() {
                 case 1:
                     _a.sent();
                     postSize = getTotalFileSizeInKiloBytes(allFilePathsToMinify);
-                    console.log("Minfied " + allFilePathsToMinify.length + " number of files");
-                    console.log("Post-filesize: " + postSize + " bytes");
-                    console.log("Total size saved: " + (postSize - preSize));
-                    return [3 /*break*/, 3];
+                    console.log("Minfied " + allFilePathsToMinify.length + " number of " + fileType + "-files");
+                    console.log("Post-filesize: " + postSize + " kilobytes");
+                    console.log("Total size saved: " + (postSize - preSize) + " kilobytes");
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function () {
+        var minifyFilesPath, minifyJsFiles, minifyCSSFiles, err_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 5, , 6]);
+                    minifyFilesPath = tl.getInput("minifyFilesPath", true);
+                    if (minifyFilesPath == undefined || minifyFilesPath.trim() == "" || minifyFilesPath == "bad") {
+                        tl.setResult(tl.TaskResult.Failed, "minifyFilesPath is not valid");
+                        return [2 /*return*/];
+                    }
+                    minifyJsFiles = tl.getBoolInput("minifyJsFiles", true);
+                    minifyCSSFiles = tl.getBoolInput("minifyCssFiles", true);
+                    if (!minifyJsFiles) return [3 /*break*/, 2];
+                    return [4 /*yield*/, minifyFileType(minifyFilesPath, ".js")];
+                case 1:
+                    _a.sent();
+                    _a.label = 2;
                 case 2:
+                    if (!minifyCSSFiles) return [3 /*break*/, 4];
+                    return [4 /*yield*/, minifyFileType(minifyFilesPath, ".css")];
+                case 3:
+                    _a.sent();
+                    _a.label = 4;
+                case 4:
+                    if (!minifyJsFiles && !minifyCSSFiles) {
+                        console.log("Neither minify js nor css was checked, no minification has been executed");
+                    }
+                    return [3 /*break*/, 6];
+                case 5:
                     err_1 = _a.sent();
                     tl.setResult(tl.TaskResult.Failed, err_1.message);
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/];
+                    return [3 /*break*/, 6];
+                case 6: return [2 /*return*/];
             }
         });
     });

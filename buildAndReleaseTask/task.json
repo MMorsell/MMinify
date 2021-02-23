@@ -20,6 +20,20 @@
       "defaultValue": "",
       "required": true,
       "helpMarkDown": "$(System.DefaultWorkingDirectory)/output/ppg"
+    },
+    {
+      "name": "minifyJsFiles",
+      "type": "boolean",
+      "label": "Minify Js-files in the entered path",
+      "defaultValue": true,
+      "required": true
+    },
+    {
+      "name": "minifyCssFiles",
+      "type": "boolean",
+      "label": "Minify CSS-files in the entered path",
+      "defaultValue": true,
+      "required": true
     }
   ],
   "execution": {

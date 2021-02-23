@@ -1,15 +1,15 @@
 {
   "manifestVersion": 1,
   "id": "build-release-task",
-  "name": "Fabrikam Build and Release Tools",
-  "version": "0.0.2",
+  "name": "MMinify",
+  "version": "0.0.3",
   "publisher": "MartinMrsell",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
     }
   ],
-  "description": "Tools for building/releasing with Fabrikam. Includes one build/release task.",
+  "description": "Build task that minifies .css and .js files under a given path",
   "categories": ["Azure Pipelines"],
   "icons": {
     "default": "images/extension-icon.png"

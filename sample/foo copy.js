@@ -1,1 +1,0 @@
-cb.tools1={};cb.tools1.substitute=function(b,d){var a,e=d.length;for(a=0;a<e;a++){var c="\\{"+a+"\\}";c=new RegExp(c,"g");b=b.replace(c,d[a])}return b};
