@@ -22,10 +22,16 @@ steps:
 - script: tsc
   workingDirectory: buildAndReleaseTask
   displayName: 'tsc run'
-
-- task: MMinify@1
+  
+- task: PublishBuildArtifacts@1
   inputs:
-    minifyFilesPath: '$(System.DefaultWorkingDirectory)/samples'
-    minifyJsFiles: true
-    minifyCssFiles: true
+    PathtoPublish: '$(System.DefaultWorkingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+# - task: MMinify@1
+#   inputs:
+#     minifyFilesPath: '$(System.DefaultWorkingDirectory)/samples'
+#     minifyJsFiles: true
+#     minifyCssFiles: true
 
